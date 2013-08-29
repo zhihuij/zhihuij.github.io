@@ -1,0 +1,19 @@
+// This File is imported last, and will override other styles in the cascade
+// Add styles here to make changes without digging in too much
+pre.prettyprint {
+    background: none; overflow: visible
+}
+
+pre li.L0, pre li.L1, pre li.L2, pre li.L3, pre li.L5, pre li.L6, pre li.L7, pre li.L8 {
+    list-style-type: decimal
+}
+
+span.categories_tag {
+    line-height: 28px;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+span.categories_tag a {
+    margin-right: 4px;
+}
