@@ -69,9 +69,11 @@ github_repo_count: 0
 github_show_profile_link: true
 github_skip_forks: true
 
+jiathis_share: true
+
 # Twitter
 twitter_user: zhjiao
-twitter_tweet_button: true
+twitter_tweet_button: false
 
 # Google +1
 google_plus_one: false
