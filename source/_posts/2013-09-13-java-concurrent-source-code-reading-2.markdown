@@ -217,7 +217,7 @@ ThreadPoolExecutor使用BlockingQueue来管理任务队列，任务队列与线�
     }
 </pre>
 
-去除了状态检查的相关代码后，核心的逻辑如下：在需要清理[超时](#timeout)的情况下调用BlockingQueue.poll来获取任务，如果在超时后还没有任务，则让相应的worker线程退出；如果不需要处理超时时候，调用BlockingQueue.take，阻塞当前worker线程一直到有任务到达。
+去除了状态检查的相关代码后，核心的逻辑如下：在需要处理[超时](#timeout)的情况下调用BlockingQueue.poll来获取任务，如果在超时后还没有任务，则让相应的worker线程退出；如果不需要处理超时时候，调用BlockingQueue.take，阻塞当前worker线程一直到有任务到达。
 
 ###总结
 
