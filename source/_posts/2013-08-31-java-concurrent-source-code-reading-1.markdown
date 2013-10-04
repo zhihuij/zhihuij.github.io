@@ -11,6 +11,8 @@ categories: java concurrent lock
 
 Java同步机制除了内置的synchronized（包含Object.wait/notify）以外，还通过concurrent包提供了多种锁，包含ReentrantLock、Semaphore、ReentrantReadWriteLock等，以及跟Object.wait/notify类似语义的Condition接口。
 
+<!--more-->
+
 #### 接口定义
 
 具体的接口（Lock，Condition）就不在这里赘述，只做个简单总结：

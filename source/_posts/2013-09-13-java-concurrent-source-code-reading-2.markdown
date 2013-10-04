@@ -9,6 +9,8 @@ categories: java concurrent
 > 1. 避免在运行大量任务时，频繁的线程创建和销毁开销；
 > 2. 使资源的使用得到有效控制，避免创建过多的线程占用系统资源。
 
+<!--more-->
+
 ##基本概念
 
 ###Core and maximum pool sizes

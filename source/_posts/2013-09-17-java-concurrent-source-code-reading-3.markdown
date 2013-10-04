@@ -8,6 +8,8 @@ categories: java concurrent
 ##功能
 根据Java文档描述，ForkJoinPool中一种特殊的ExecutorService，可以执行ForkJoinTask。ForJoinTask可以在运行时Fork子任务，并join子任务的完成，本质上类似分治算法：将问题尽可能的分割，直到问题可以快速解决。对ForkJoinPool来说，与其它ExecutorService最重要的不同点是，它的工作线程会从其它工作线程的任务队列偷任务来执行。
 
+<!--more-->
+
 ##实现
 根据代码里的文档，可以了解到ForkJoin框架主要由三个类组成：
 > * ForkJoinPool：管理worker线程，类似ThreadPoolExecutor，提供接口用于提交或者执行任务；
