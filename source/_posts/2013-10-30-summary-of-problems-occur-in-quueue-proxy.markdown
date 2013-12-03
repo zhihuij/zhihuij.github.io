@@ -154,3 +154,12 @@ java.lang.Thread.State: WAITING (on object monitor)
 ###basic.consume没有发送到HA模式下的所有结点（代码问题）
 
 通过RabbitMQ的管理页面看到，建立到后端的连接，只有一个会消费消息，其它连接都没在干事。一开始怀疑客户端未发送正确发送basic.consume命令，后测试发现是Proxy在HA模式下的时候，只会将某些命令（queue.declare，exchange.declare等）发送到一个结点，但basic.consume需要发送到所有结点。
+
+**[2013.11.14更新]**
+###Proxy直接Crash（代码问题）
+
+前一天晚上收到报警，两台机器的Proxy都挂了，上去服务器看了下，有erl_crash.dump文件，时间差不多，一个在00:10分，一个在00:12分，把dump文件拉到本地，用CrashDumpViewer查看，看到错误信息：
+
+> * no more index entries in atom_tab (max=1048576)
+
+看样子像是创建了大量的atom，在CrashDumpViewer里看到大量ClientReader进程注册名的atom，但是没看到其它相应工作进程的注册名。后来反映到Proxy前面有HAProxy，是要做定期健康检查的，每次的检查都需要新建一个TCP连接，同时创建一个ClientReader进程，但是这个TCP连接会马上断开，也就是不会发送我们的期望的AMQP协议数据。看了下代码，进程注册名称的行为果然发生在进程一创建的瞬间，而不是检测到AMQP协议数据的时候，所以每次的健康检查都会导致多一个atom，前端两台HAProxy就是每次检查多出2个atom，长期运行，最终导致atom超过最大数量。
