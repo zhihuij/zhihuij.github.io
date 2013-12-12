@@ -3,7 +3,7 @@ layout: post
 title: "队列系统问题总结"
 date: 2013-10-30 16:13
 comments: true
-categories: erlang tcp
+categories: erlang tcp btrace
 ---
 
 ##概述
@@ -184,3 +184,131 @@ java.lang.Thread.State: WAITING (on object monitor)
 > 2. 不完成三次连接，应用层就不会检测到连接，对应用的逻辑没有影响，有些应用可能在连接一建立就会做一些初始化工作或者打一些日志：我们的Proxy本来就是在连接一建立的就会打一条日志，后来就是因为在LVS环境下，大量的健康检查连接导致大量的日志，所以把日志打印推迟到收到实际的AMQP数据才打印。
 
 从上面来看，HAProxy考虑的更周到。
+
+**[2013.12.12更新]**
+
+###生产者Confirm超时（代码问题）
+
+观察到的现象时，生产者偶尔会出现等待服务端confirm超时的现象（一开始设置的超时时间5秒，后来设置到10秒，30秒），发现问题依旧。一开始并没有很重视这个问题，主要有两个原因：1）超时不会导致消息丢失，只会导致消息重复，在我们的应用场景中，重复没有影响（客户端最终会做去重处理）；2）一开始的测试表明，通过Proxy及直接通过RabbitMQ都会导致超时，所以怀疑跟RabbitMQ的分布式机制有关系。
+
+最近这个问题基本上每天都会出现，而且了解RabbitMQ的分布式机制后，觉得这个不是超时产生的原因，所以决定重做测试。一开始测试客户端在本地，很Happy的是跑第一遍的时候出现超时，虽然说超时的时机不确定，抓包后发现有丢包，也就是发送的数据包根本没到服务端，所以服务端也不可能会confirm，跟同事分析结果的时候，有人提醒我们本地连服务器的VPN是走UDP的，所以丢包也正常。。。，也就是说以前的测试结论也不成立：有可能只是通过Proxy会出问题，而直接通过RabbitMQ不会出问题。
+
+基于以上了解，开始把测试程序部署到线上的机器上，跑了两天后，发现测试程序没出现超时的现象（不管是通过Proxy还是直接通过RabbitMQ），而线上程序还是基本每天有一两次的超时。看来只能通过线上的程序来诊断问题，随写了如下的Btrace脚本：
+
+<pre class="prettyprint linenums lang-java">
+@BTrace public class ConfirmTimeout {
+    @TLS static Throwable currentException;
+
+    @OnMethod(
+        clazz="java.util.concurrent.TimeoutException",
+        method="<init>"
+    )
+    public static void onThrow(@Self TimeoutException self) {
+        println(self);
+        currentException = self;
+    }
+
+    @OnMethod(
+        clazz="com.rabbitmq.client.impl.ChannelN",
+        method="waitForConfirms",
+        location=@Location(Kind.THROW)
+    ) 
+    public static void onConfirm(@Self ChannelN ch) {
+        if(currentException != null) {
+            Field chNumField = field("com.rabbitmq.client.impl.AMQChannel", "_channelNumber");
+            Field connField = field("com.rabbitmq.client.impl.AMQChannel", "_connection");
+            Field nextSeqField = field("com.rabbitmq.client.impl.ChannelN", "nextPublishSeqNo");
+            int chNum = getInt(chNumField, ch);
+            long nextSeq = getLong(nextSeqField, ch);
+            Object conn = get(connField, ch);
+            long threadId = threadId(currentThread());
+            String tmp = timestamp("yyyy-MM-dd HH:mm:ss.SSSZ");
+            tmp = strcat(tmp, "  ");
+            tmp = strcat(tmp, str(conn));
+            tmp = strcat(tmp, " exception=> ");
+            tmp = strcat(tmp, str(threadId));
+            tmp = strcat(tmp, " : ");
+            tmp = strcat(tmp, str(chNum));
+            tmp = strcat(tmp, " -> ");
+            tmp = strcat(tmp, str(nextSeq));
+            println(tmp);
+            currentException = null;
+        }
+    }
+
+    @OnMethod(
+        clazz="com.rabbitmq.client.impl.ChannelN",
+        method="close"
+    ) 
+    public static void onCloseChannel(@Self ChannelN ch) {
+            Field chNumField = field("com.rabbitmq.client.impl.AMQChannel", "_channelNumber");
+            Field connField = field("com.rabbitmq.client.impl.AMQChannel", "_connection");
+            Field nextSeqField = field("com.rabbitmq.client.impl.ChannelN", "nextPublishSeqNo");
+            int chNum = getInt(chNumField, ch);
+            long nextSeq = getLong(nextSeqField, ch);
+            Object conn = get(connField, ch);
+            long threadId = threadId(currentThread());
+            String tmp = timestamp("yyyy-MM-dd HH:mm:ss.SSSZ");
+            tmp = strcat(tmp, "  ");
+            tmp = strcat(tmp, str(conn));
+            tmp = strcat(tmp, " close=> ");
+            tmp = strcat(tmp, str(threadId));
+            tmp = strcat(tmp, " : ");
+            tmp = strcat(tmp, str(chNum));
+            tmp = strcat(tmp, " -> ");
+            tmp = strcat(tmp, str(nextSeq));
+            println(tmp);
+    }
+
+    @OnMethod(
+        clazz="com.rabbitmq.client.impl.AMQConnection",
+        method="createChannel",
+        location=@Location(Kind.RETURN)
+    ) 
+    public static void onCreateChannel(@Self AMQConnection conn, @Return ChannelN ch) {
+        Field chNumField = field("com.rabbitmq.client.impl.AMQChannel", "_channelNumber");
+        int chNum = getInt(chNumField, ch);
+        long threadId = threadId(currentThread());
+        String tmp = timestamp("yyyy-MM-dd HH:mm:ss.SSSZ");
+        tmp = strcat(tmp, "  ");
+        tmp = strcat(tmp, str(conn));
+        tmp = strcat(tmp, " create=> ");
+        tmp = strcat(tmp, str(threadId));
+        tmp = strcat(tmp, " : ");
+        tmp = strcat(tmp, str(chNum));
+        println(tmp);
+    }
+}
+</pre>
+
+主要需要搞清楚这么几个问题：1）发生超时问题的连接是哪一个？（本来需要打印出连接地址，发送Btrace不允许调用对象的toString，所以只能打印对象ID）；2）发生问题的线程是哪一个？3）发生问题的channel ID是哪一个？4）发送问题时客户端等待的confirm消息的seq是什么？
+
+跑了一两天后，得到类似下面的输出日志：
+
+<pre class="prettyprint linenums lang-java">
+2013-12-11 16:57:11.733+0800  com.rabbitmq.client.impl.AMQConnection@4b0a1577 create=> 213 : 37
+2013-12-11 17:58:29.578+0800  com.rabbitmq.client.impl.AMQConnection@4b0a1577 close=> 41 : 37 -> 3
+2013-12-11 18:27:28.530+0800  com.rabbitmq.client.impl.AMQConnection@4b0a1577 create=> 196 : 37
+2013-12-11 18:27:58.540+0800  com.rabbitmq.client.impl.AMQConnection@4b0a1577 exception=> 196 : 37 -> 2
+</pre>
+
+观察到的现象是只要出现类似上面的序列：1）create channel A；2）close channel A（close是客户端SDK的主动回收机制引起的）；3）create channel A；第三步创建的channel发送的第一次消息肯定超时。
+
+当时虽然也想到可能是Proxy没有把老的channel数据清除掉，所以导致问题，但是因为这一块以前已经处理过，在channel关闭的时候Proxy会主动清除数据，所以觉得不可能是这里的问题。
+
+所以只好根据这些日志，重现这个问题。我们的客户端SDK用google的guava库来做的回收，这个库的特点是：1）没有独立的线程来做回收；2）回收发生在数据读写时；3）回收是分段进行的，类似ConcurrentHashMap里的分段锁。这里有两个东西要注意：1）哪些channel的操作会触发目标channel的回收操作？2）每次读写都会触发回收操作么？ 其中第二个问题一开始想当然的以为每次读数据都会触发回收，后来发现写的测试程序无法重现错误序列，大概翻了下guava的代码，发现读操作只有积累到一定量的时候才会触发（目前阈值是64）。
+
+测试程序搞定后，通过Proxy发送数据可以稳定重现问题，但是直接通过RabbitMQ发送数据没有问题，看来还是Proxy的问题。仔细查看代码后，发现类似这样的逻辑：
+
+<pre class="prettyprint linenums lang-erlang">
+process_frame(Frame, State#ch{channel = Channel}) ->
+	NewState = handle_method(Method, State);
+	put({channel, Channel});
+	....
+
+handle_method(#'channel.close', State#ch{channel = Channel}) -> 
+	erase({channel, Channel}),
+	State;
+</pre>
+
+了解Erlang的应该知道，erase是清除进程数据，put是添加（或更新）进程数据，也就是说channel.close的时候确实清了数据，但是外部调用函数又把它加回去了。。。
