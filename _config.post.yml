@@ -1,0 +1,27 @@
+widgets:
+    # Profile widget configurations
+    -
+        # Where should the widget be placed, left sidebar or right sidebar
+        position: left
+        type: profile
+        # Author name
+        author: Zhihui Jiao 
+        # URL or path to the avatar image
+        avatar: /img/p.jpeg
+        # Whether show the rounded avatar image
+        avatar_rounded: false
+        # Email address for the Gravatar
+        gravatar: 
+        # URL or path for the follow button
+        #follow_link: https://github.com/zhihuij
+    # Table of contents widget configurations
+    -
+        # Where should the widget be placed, left sidebar or right sidebar
+        position: left
+        type: toc
+        # Whether to show the index of each heading
+        index: false
+        # Whether to collapse sub-headings when they are out-of-view
+        collapsed: false
+        # Maximum level of headings to show (1-6)
+        depth: 3
