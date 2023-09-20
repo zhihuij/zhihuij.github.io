@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>RabbitMQ HA机制 - Zhihui&#039;s Blog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Zhihui&#039;s Blog"><meta name="msapplication-TileImage" content="/img/p.jpeg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Zhihui&#039;s Blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="RabbitMQ为了保证消息不丢失，提供了高可用机制，或者称为镜像队列，详细文档可以参考这里，本文试图搞清楚其实现细节。"><meta property="og:type" content="blog"><meta property="og:title" content="RabbitMQ HA机制"><meta property="og:url" content="http://zhihuij.github.io/2013/11/12/rabbitmq-ha/"><meta property="og:site_name" content="Zhihui&#039;s Blog"><meta property="og:description" content="RabbitMQ为了保证消息不丢失，提供了高可用机制，或者称为镜像队列，详细文档可以参考这里，本文试图搞清楚其实现细节。"><meta property="og:locale" content="en_US"><meta property="og:image" content="http://zhihuij.github.io/images/rabbit_ha.png"><meta property="og:image" content="http://zhihuij.github.io/images/rabbit_ha_publish.png"><meta property="og:image" content="http://zhihuij.github.io/images/rabbit_ha_consume.png"><meta property="article:published_time" content="2013-11-12T03:05:00.000Z"><meta property="article:author" content="Zhihui"><meta property="article:tag" content="rabbitmq"><meta property="article:tag" content="ha"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="http://zhihuij.github.io/images/rabbit_ha.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://zhihuij.github.io/2013/11/12/rabbitmq-ha/"},"headline":"RabbitMQ HA机制","image":["http://zhihuij.github.io/images/rabbit_ha.png","http://zhihuij.github.io/images/rabbit_ha_publish.png","http://zhihuij.github.io/images/rabbit_ha_consume.png"],"datePublished":"2013-11-12T03:05:00.000Z","author":{"@type":"Person","name":"Zhihui"},"publisher":{"@type":"Organization","name":"Zhihui's Blog","logo":{"@type":"ImageObject","url":"http://zhihuij.github.io/img/p.jpeg"}},"description":"RabbitMQ为了保证消息不丢失，提供了高可用机制，或者称为镜像队列，详细文档可以参考这里，本文试图搞清楚其实现细节。"}</script><link rel="canonical" href="http://zhihuij.github.io/2013/11/12/rabbitmq-ha/"><link rel="icon" href="/img/p.jpeg"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/p.jpeg" alt="Zhihui&#039;s Blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="Catalogue" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="Search" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item">Posted&nbsp;<time dateTime="2013-11-12T03:05:00.000Z" title="2013/11/12 11:05:00">2013-11-12</time></span><span class="level-item"><a class="link-muted" href="/categories/Middleware/">Middleware</a></span><span class="level-item">9 minutes read (About 1383 words)</span></div></div><h1 class="title is-3 is-size-4-mobile">RabbitMQ HA机制</h1><div class="content"><p>RabbitMQ为了保证消息不丢失，提供了高可用机制，或者称为镜像队列，详细文档可以参考<a target="_blank" rel="noopener" href="http://www.rabbitmq.com/ha.html">这里</a>，本文试图搞清楚其实现细节。</p>
+<span id="more"></span>
+
+<h2 id="创建高可用队列"><a href="#创建高可用队列" class="headerlink" title="创建高可用队列"></a>创建高可用队列</h2><p>RabbitMQ在3.x之前是通过客户端在创建队列时传入特定参数还创建高可用队列的，3.x之后，所有高可用队列都是通过policy来管理，使用类似正则匹配的方式来决定哪些队列需要创建成镜像队列。</p>
+<h3 id="与普通队列的差别"><a href="#与普通队列的差别" class="headerlink" title="与普通队列的差别"></a>与普通队列的差别</h3><p>普通队列只在创建结点上存在一个Erlang进程（amqqueue_process）来处理消息逻辑，而HA的队列存在两类进程：master进程（amqqueue_process）和slave进程（rabbit_mirror_queue_slave），每个进程包含一个实际用于处理消息逻辑的队列（rabbit_variable_queue）。整体结构如下图：</p>
+<img src="/images/rabbit_ha.png" />
+
+<h2 id="消息流程"><a href="#消息流程" class="headerlink" title="消息流程"></a>消息流程</h2><h3 id="发送消息"><a href="#发送消息" class="headerlink" title="发送消息"></a>发送消息</h3><p>生产消息的事件会通过rabbit_channel进程同时广播到master和slave进程（异步），并且在master进程收到消息后，会再通过GM将该消息广播到所有slave进程（异步），也就是说对于生产消息的事件，slave进程会同时收到两个消息：一个从GM发来，一个从rabbit_channel进程发来。消息流如下图所示：</p>
+<img src="/images/rabbit_ha_publish.png" />
+
+<p>代码里的文档对于为什么同时需要从channel发送消息到slave的解释如下：</p>
+<blockquote>
+<p>The key purpose of also sending messages directly from the channels<br>to the slaves is that without this, in the event of the death of<br>the master, messages could be lost until a suitable slave is<br>promoted. However, that is not the only reason. A slave cannot send<br>confirms for a message until it has seen it from the<br>channel. Otherwise, it might send a confirm to a channel for a<br>message that it might <em>never</em> receive from that channel. This can<br>happen because new slaves join the gm ring (and thus receive<br>messages from the master) before inserting themselves in the<br>queue’s mnesia record (which is what channels look at for routing).<br>As it turns out, channels will simply ignore such bogus confirms,<br>but relying on that would introduce a dangerously tight coupling.</p>
+</blockquote>
+<p>也就是说不通过channel发送消息到slave进程可能会产生两个问题：</p>
+<blockquote>
+<ol>
+<li>如果master进程挂掉了，消息有可能会丢失：master收到消息，广播到slave进程之前挂掉，slave进程就不可能通过GM收到该消息；</li>
+<li>在slave进程已经加入到GM中，但是slave进程信息还没有写到mnesia数据库中时，slave进程可能只会收到从GM发送过来的消息，这时候，slave会发送一个从来没收到过的消息的confirm消息到channel进程；从上面的解释来看，RabbitMQ认为这样会带来强耦合的关系。</li>
+</ol>
+</blockquote>
+<h3 id="confirm消息"><a href="#confirm消息" class="headerlink" title="confirm消息"></a>confirm消息</h3><p>master进程及slave进程在实际队列完成消息入队工作（可能会持久化到磁盘）后，将会发送进程（rabbit_channel）发送一个confirm消息，rabbit_channel进程只有在收到所有队列进程（master及slave）的confirm消息后，才会向客户端发回confirm消息。</p>
+<h3 id="消费消息"><a href="#消费消息" class="headerlink" title="消费消息"></a>消费消息</h3><p>所有消费消息的相关事件（获取消息，ack消息，requeue消息）都是只发送到master进程，然后由master进程通过GM来广播这些事件到所有slave进程。消息流如下图所示：</p>
+<img src="/images/rabbit_ha_consume.png" />
+
+<h2 id="节点变化"><a href="#节点变化" class="headerlink" title="节点变化"></a>节点变化</h2><h3 id="新结点加入"><a href="#新结点加入" class="headerlink" title="新结点加入"></a>新结点加入</h3><p>新的slave结点可以随时加入集群，但是加入之前的消息并不会同步到新的slave结点。也就是说在一开始，新的slave结点肯定会在一段时间内与master的内容不同步，随着旧消息被消费，新slave结点的内容会保持与master同步。</p>
+<h3 id="Slave挂掉"><a href="#Slave挂掉" class="headerlink" title="Slave挂掉"></a>Slave挂掉</h3><p>基本无影响，连接在这个slave上的客户端需要重新连接到其它结点。</p>
+<h3 id="Master挂掉"><a href="#Master挂掉" class="headerlink" title="Master挂掉"></a>Master挂掉</h3><blockquote>
+<ol>
+<li>一个slave会被选举为新的master，要求这个slave为所有slave中最老的结点；</li>
+<li>Slave认为所有之前的Consumer都突然断开，然后会requeue所有之前未ACK的消息（ACK可能未到已挂掉的Master或者已经到已挂掉的Master，但在广播到到Slave之前，Master挂掉），这种情况下，会导致客户端收到重复的消息；</li>
+<li>未断开的Consumer会收到 Consumer Cancellation Notification，这时候Consumer应该重新订阅队列。</li>
+</ol>
+</blockquote>
+<p>也就是说master结点的异常会产生两个问题：1）可能会丢消息；2）可能会收到重复消息。重复消息还可以接受（就算是普通队列也会面临这个问题，需要应用层来处理），但是丢消息对应用来说可能就会有点问题。</p>
+<h2 id="运维"><a href="#运维" class="headerlink" title="运维"></a>运维</h2><h3 id="网络分区"><a href="#网络分区" class="headerlink" title="网络分区"></a>网络分区</h3><p>RabbitMQ提供了一个配置参数：cluster_partition_handling，可选值有三个：ignore，pause_minority，autoheal，具体什么意思可以参考<a target="_blank" rel="noopener" href="http://www.rabbitmq.com/partitions.html">这里</a>。</p>
+<p>也可以自己手动来解决：在发生网络分区时，选一个分区，把另一个分区的RabbitMQ全部重启一遍就可以重新组成集群。按官方的意思，在这之后，最好把整个集群重启一次才能清除掉警告信息。</p>
+</div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/rabbitmq/">rabbitmq</a><a class="link-muted mr-2" rel="tag" href="/tags/ha/">ha</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2013/11/15/rabbitmq-persistent/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">RabbitMQ持久化机制</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2013/10/30/summary-of-problems-occur-in-quueue-proxy/"><span class="level-item">队列系统问题总结</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">Comments</h3><div id="disqus_thread"><noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div><script>var disqus_config = function () {
+            this.page.url = 'http://zhihuij.github.io/2013/11/12/rabbitmq-ha/';
+            this.page.identifier = '2013/11/12/rabbitmq-ha/';
+        };
+        (function() {
+            var d = document, s = d.createElement('script');  
+            s.src = '//' + 'onlychoice' + '.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/p.jpeg" alt="Zhihui Jiao"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Zhihui Jiao</p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">Posts</p><a href="/archives"><p class="title">7</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Categories</p><a href="/categories"><p class="title">4</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Tags</p><a href="/tags"><p class="title">10</p></a></div></div></nav></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">Catalogue</h3><ul class="menu-list"><li><a class="level is-mobile" href="#创建高可用队列"><span class="level-left"><span class="level-item">创建高可用队列</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#与普通队列的差别"><span class="level-left"><span class="level-item">与普通队列的差别</span></span></a></li></ul></li><li><a class="level is-mobile" href="#消息流程"><span class="level-left"><span class="level-item">消息流程</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#发送消息"><span class="level-left"><span class="level-item">发送消息</span></span></a></li><li><a class="level is-mobile" href="#confirm消息"><span class="level-left"><span class="level-item">confirm消息</span></span></a></li><li><a class="level is-mobile" href="#消费消息"><span class="level-left"><span class="level-item">消费消息</span></span></a></li></ul></li><li><a class="level is-mobile" href="#节点变化"><span class="level-left"><span class="level-item">节点变化</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#新结点加入"><span class="level-left"><span class="level-item">新结点加入</span></span></a></li><li><a class="level is-mobile" href="#Slave挂掉"><span class="level-left"><span class="level-item">Slave挂掉</span></span></a></li><li><a class="level is-mobile" href="#Master挂掉"><span class="level-left"><span class="level-item">Master挂掉</span></span></a></li></ul></li><li><a class="level is-mobile" href="#运维"><span class="level-left"><span class="level-item">运维</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#网络分区"><span class="level-left"><span class="level-item">网络分区</span></span></a></li></ul></li></ul></div></div><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/p.jpeg" alt="Zhihui&#039;s Blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Zhihui</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("en");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><a id="back-to-top" title="Back to top" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "This website uses cookies to improve your experience.",
+          dismiss: "Got it!",
+          allow: "Allow cookies",
+          deny: "Decline",
+          link: "Learn more",
+          policy: "Cookie Policy",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="Type something..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"Type something...","untitled":"(Untitled)","posts":"Posts","pages":"Pages","categories":"Categories","tags":"Tags"});
+        });</script></body></html>
