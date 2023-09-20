@@ -62,5 +62,5 @@ ignore: null
 theme: icarus
 deploy:
     type: git
-    repo: https://github.com/zhihuij/zhihuij.github.io
+    repo: git@github.com:zhihuij/zhihuij.github.io.git
     branch: gh-pages
