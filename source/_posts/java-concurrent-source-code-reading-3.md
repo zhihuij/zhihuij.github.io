@@ -4,8 +4,7 @@ date: 2013-09-17 23:04
 comments: true
 toc: true
 categories: 
-    - Java 
-    - Concurrent 
+    - Java
 tags:
     - java
     - concurrent

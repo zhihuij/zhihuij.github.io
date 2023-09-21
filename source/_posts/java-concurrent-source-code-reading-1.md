@@ -5,7 +5,6 @@ comments: true
 toc: true
 categories: 
     - Java 
-    - Concurrent 
 tags:
     - java
     - concurrent

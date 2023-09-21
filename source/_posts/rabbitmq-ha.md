@@ -6,6 +6,7 @@ comments: true
 toc: true
 categories: 
     - Middleware
+    - MQ
 tags:
     - rabbitmq
     - ha

@@ -25,3 +25,14 @@ widgets:
         collapsed: false
         # Maximum level of headings to show (1-6)
         depth: 3
+    -
+        # Where should the widget be placed, left sidebar or right sidebar
+        position: left
+        type: tags
+        # How to order tags. For example 'name' to order by name in ascending order, and '-length' to order by number of posts in each tags in descending order
+        order_by: name
+        # Amount of tags to show. Will show all if not set.
+        amount:
+        # Whether to show tags count, i.e. number of posts in the tag.
+        show_count: true
+
