@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>JVM 中可生成的最大 Thread 数量 - Zhihui&#039;s Blog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Zhihui&#039;s Blog"><meta name="msapplication-TileImage" content="/img/p.jpeg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Zhihui&#039;s Blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="背景最近想测试下Openfire下的最大并发数，需要开大量线程来模拟客户端。对于一个JVM实例到底能开多少个线程一直心存疑惑，所以打算实际测试下，简单google了把，找到影响线程数量的因素有下面几个："><meta property="og:type" content="blog"><meta property="og:title" content="JVM 中可生成的最大 Thread 数量"><meta property="og:url" content="http://zhihuij.github.io/2011/08/09/jvm-max-threads/"><meta property="og:site_name" content="Zhihui&#039;s Blog"><meta property="og:description" content="背景最近想测试下Openfire下的最大并发数，需要开大量线程来模拟客户端。对于一个JVM实例到底能开多少个线程一直心存疑惑，所以打算实际测试下，简单google了把，找到影响线程数量的因素有下面几个："><meta property="og:locale" content="en_US"><meta property="og:image" content="http://zhihuij.github.io/img/og_image.png"><meta property="article:published_time" content="2011-08-09T12:53:00.000Z"><meta property="article:author" content="Zhihui"><meta property="article:tag" content="java"><meta property="article:tag" content="concurrent"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="http://zhihuij.github.io/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://zhihuij.github.io/2011/08/09/jvm-max-threads/"},"headline":"JVM 中可生成的最大 Thread 数量","image":["http://zhihuij.github.io/img/og_image.png"],"datePublished":"2011-08-09T12:53:00.000Z","author":{"@type":"Person","name":"Zhihui"},"publisher":{"@type":"Organization","name":"Zhihui's Blog","logo":{"@type":"ImageObject","url":"http://zhihuij.github.io/img/p.jpeg"}},"description":"背景最近想测试下Openfire下的最大并发数，需要开大量线程来模拟客户端。对于一个JVM实例到底能开多少个线程一直心存疑惑，所以打算实际测试下，简单google了把，找到影响线程数量的因素有下面几个："}</script><link rel="canonical" href="http://zhihuij.github.io/2011/08/09/jvm-max-threads/"><link rel="icon" href="/img/p.jpeg"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/p.jpeg" alt="Zhihui&#039;s Blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="Catalogue" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="Search" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item">Posted&nbsp;<time dateTime="2011-08-09T12:53:00.000Z" title="2011/8/9 20:53:00">2011-08-09</time></span><span class="level-item"><a class="link-muted" href="/categories/Java/">Java</a></span><span class="level-item">9 minutes read (About 1341 words)</span></div></div><h1 class="title is-3 is-size-4-mobile">JVM 中可生成的最大 Thread 数量</h1><div class="content"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近想测试下Openfire下的最大并发数，需要开大量线程来模拟客户端。对于一个JVM实例到底能开多少个线程一直心存疑惑，所以打算实际测试下，简单google了把，找到影响线程数量的因素有下面几个：</p>
+<span id="more"></span>
+
+<table>
+<thead>
+<tr>
+<th><a href=""></a></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-Xms</td>
+<td>intial java heap size</td>
+</tr>
+<tr>
+<td>-Xmx</td>
+<td>maximum java heap size</td>
+</tr>
+<tr>
+<td>-Xss</td>
+<td>the stack size for each thread</td>
+</tr>
+<tr>
+<td>系统限制</td>
+<td>系统最大可开线程数</td>
+</tr>
+</tbody></table>
+<h2 id="测试程序"><a href="#测试程序" class="headerlink" title="测试程序"></a>测试程序</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.concurrent.atomic.AtomicInteger;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestThread</span> <span class="keyword">extends</span> <span class="title class_">Thread</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">AtomicInteger</span> <span class="variable">count</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicInteger</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            (<span class="keyword">new</span> <span class="title class_">TestThread</span>()).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(count.incrementAndGet());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(Integer.MAX_VALUE);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试环境"><a href="#测试环境" class="headerlink" title="测试环境"></a>测试环境</h2><p>系统：Ubuntu 10.04 Linux Kernel 2.6 （32位）<br>内存：2G<br>JDK：1.7</p>
+<h2 id="测试结果"><a href="#测试结果" class="headerlink" title="测试结果"></a>测试结果</h2><h3 id="不考虑系统限制"><a href="#不考虑系统限制" class="headerlink" title="不考虑系统限制"></a>不考虑系统限制</h3><table>
+<thead>
+<tr>
+<th>-Xms</th>
+<th>-Xmx</th>
+<th>-Xss</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1024m</td>
+<td>1024m</td>
+<td>1024k</td>
+<td>1737</td>
+</tr>
+<tr>
+<td>1024m</td>
+<td>1024m</td>
+<td>64k</td>
+<td>26077</td>
+</tr>
+<tr>
+<td>512m</td>
+<td>512m</td>
+<td>64k</td>
+<td>31842</td>
+</tr>
+<tr>
+<td>256m</td>
+<td>256m</td>
+<td>64k</td>
+<td>31842</td>
+</tr>
+</tbody></table>
+<p>在创建的线程数量达到31842个时，系统中无法创建任何线程。</p>
+<p>由上面的测试结果可以看出增大堆内存（-Xms，-Xmx）会减少可创建的线程数量，增大线程栈内存（-Xss，32位系统中此参数值最小为60K）也会减少可创建的线程数量。</p>
+<h3 id="结合系统限制"><a href="#结合系统限制" class="headerlink" title="结合系统限制"></a>结合系统限制</h3><p>线程数量31842的限制是是由系统可以生成的最大线程数量决定的：&#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;threads-max，可其默认值是32080。修改其值为10000：echo 10000 &gt; &#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;threads-max，修改后的测试结果如下：</p>
+<table>
+<thead>
+<tr>
+<th>-Xms</th>
+<th>-Xmx</th>
+<th>-Xss</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>256m</td>
+<td>256m</td>
+<td>64k</td>
+<td>9761</td>
+</tr>
+</tbody></table>
+<p>这样的话，是不是意味着可以配置尽量多的线程？再做修改：echo 1000000 &gt; &#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;threads-max，修改后的测试结果如下：</p>
+<table>
+<thead>
+<tr>
+<th>-Xms</th>
+<th>-Xmx</th>
+<th>-Xss</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>256m</td>
+<td>256m</td>
+<td>64k</td>
+<td>32279</td>
+</tr>
+<tr>
+<td>128m</td>
+<td>128m</td>
+<td>64k</td>
+<td>32279</td>
+</tr>
+</tbody></table>
+<p>发现线程数量在达到32279以后，不再增长。查了一下，32位Linux系统可创建的最大pid数是32678，这个数值可以通过&#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;pid_max来做修改（修改方法同threads-max），但是在32系统下这个值只能改小，无法更大。在threads-max一定的情况下，修改pid_max对应的测试结果如下：</p>
+<table>
+<thead>
+<tr>
+<th>pid_max</th>
+<th>-Xms</th>
+<th>-Xmx</th>
+<th>-Xss</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1000</td>
+<td>128m</td>
+<td>128m</td>
+<td>64k</td>
+<td>582</td>
+</tr>
+<tr>
+<td>10000</td>
+<td>128m</td>
+<td>128m</td>
+<td>64k</td>
+<td>9507</td>
+</tr>
+</tbody></table>
+<p>在Windows上的情况应该类似，不过相比Linux，Windows上可创建的线程数量可能更少。基于线程模型的服务器总要受限于这个线程数量的限制。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>JVM中可以生成的最大数量由JVM的堆内存大小、Thread的Stack内存大小、系统最大可创建的线程数量三个方面影响。具体数量可以根据Java进程可以访问的最大内存（32位系统上一般2G）、堆内存、Thread的Stack内存来估算。</p>
+<h2 id="续"><a href="#续" class="headerlink" title="续"></a>续</h2><p>在64位Linux系统（CentOS 6， 3G内存）下测试，发现还有一个参数是会限制线程数量：max user process（可通过ulimit –a查看，默认值1024，通过ulimit –u可以修改此值），这个值在上面的32位Ubuntu测试环境下并无限制。<br>将threads-max，pid_max，max user process，这三个参数值都修改成100000，-Xms，-Xmx尽量小（128m，64m），-Xss尽量小（64位下最小104k，可取值128k）。事先预测在这样的测试环境下，线程数量就只会受限于测试环境的内存大小（3G），可是实际的测试结果是线程数量在达到32K（32768，创建的数量最多的时候大概是33000左右）左右时JVM是抛出警告：Attempt to allocate stack guard pages failed，然后出现OutOfMemoryError无法创建本地线程。查看内存后发现还有很多空闲，所以应该不是内存容量的原因。Google此警告无果，暂时不知什么原因，有待进一步研究。</p>
+<h2 id="续2"><a href="#续2" class="headerlink" title="续2"></a>续2</h2><p>今天无意中发现文章[7]，马上试了下，果然这个因素会影响线程创建数量，按文中描述把&#x2F;proc&#x2F;sys&#x2F;vm&#x2F;max_map_count的数量翻倍，从65536变为131072，创建的线程总数量达到65000+，电脑基本要卡死（3G内存）… 简单查了下这个参数的作用，在[8]中的描述如下：</p>
+<blockquote>
+<p>This file contains the maximum number of memory map areas a process may have. Memory map areas are used as a side-effect of calling malloc, directly by mmap and mprotect, and also when loading shared libraries.</p>
+<p>While most applications need less than a thousand maps, certain programs, particularly malloc debuggers, may consume lots of them, e.g., up to one or two maps per allocation.</p>
+<p>The default value is 65536.</p>
+</blockquote>
+<p>OK，这个问题总算完满解决，最后总结下影响Java线程数量的因素：</p>
+<blockquote>
+<p>Java虚拟机本身：-Xms，-Xmx，-Xss；<br>系统限制：&#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;pid_max，&#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;thread-max，max_user_process（ulimit -u），&#x2F;proc&#x2F;sys&#x2F;vm&#x2F;max_map_count。</p>
+</blockquote>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li>   <a target="_blank" rel="noopener" href="http://blog.krecan.net/2010/04/07/how-many-threads-a-jvm-can-handle/">http://blog.krecan.net/2010/04/07/how-many-threads-a-jvm-can-handle/</a></li>
+<li>   <a target="_blank" rel="noopener" href="http://www.cyberciti.biz/tips/maximum-number-of-processes-linux-26-kernel-can-handle.html">http://www.cyberciti.biz/tips/maximum-number-of-processes-linux-26-kernel-can-handle.html</a></li>
+<li>   <a target="_blank" rel="noopener" href="http://geekomatic.ch/2010/11/24/1290630420000.html">http://geekomatic.ch/2010/11/24/1290630420000.html</a></li>
+<li>   <a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/763579/how-many-threads-can-a-java-vm-support">http://stackoverflow.com/questions/763579/how-many-threads-can-a-java-vm-support</a></li>
+<li>   <a target="_blank" rel="noopener" href="http://www.iteye.com/topic/1035818">http://www.iteye.com/topic/1035818</a></li>
+<li>   <a target="_blank" rel="noopener" href="http://hi.baidu.com/hexiong/blog/item/16dc9e518fb10c2542a75b3c.html">http://hi.baidu.com/hexiong/blog/item/16dc9e518fb10c2542a75b3c.html</a></li>
+<li>   <a target="_blank" rel="noopener" href="https://listman.redhat.com/archives/phil-list/2003-August/msg00025.html">https://listman.redhat.com/archives/phil-list/2003-August/msg00025.html</a></li>
+<li>   <a target="_blank" rel="noopener" href="http://www.linuxinsight.com/proc_sys_vm_max_map_count.html">http://www.linuxinsight.com/proc_sys_vm_max_map_count.html</a></li>
+</ol>
+</div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/java/">java</a><a class="link-muted mr-2" rel="tag" href="/tags/concurrent/">concurrent</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2011/11/21/interrupt-thread/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">中断线程的执行</span></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">Comments</h3><div id="disqus_thread"><noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div><script>var disqus_config = function () {
+            this.page.url = 'http://zhihuij.github.io/2011/08/09/jvm-max-threads/';
+            this.page.identifier = '2011/08/09/jvm-max-threads/';
+        };
+        (function() {
+            var d = document, s = d.createElement('script');  
+            s.src = '//' + 'onlychoice' + '.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/p.jpeg" alt="Zhihui Jiao"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Zhihui Jiao</p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">Posts</p><a href="/archives"><p class="title">11</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Categories</p><a href="/categories"><p class="title">5</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Tags</p><a href="/tags"><p class="title">13</p></a></div></div></nav></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">Catalogue</h3><ul class="menu-list"><li><a class="level is-mobile" href="#背景"><span class="level-left"><span class="level-item">背景</span></span></a></li><li><a class="level is-mobile" href="#测试程序"><span class="level-left"><span class="level-item">测试程序</span></span></a></li><li><a class="level is-mobile" href="#测试环境"><span class="level-left"><span class="level-item">测试环境</span></span></a></li><li><a class="level is-mobile" href="#测试结果"><span class="level-left"><span class="level-item">测试结果</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#不考虑系统限制"><span class="level-left"><span class="level-item">不考虑系统限制</span></span></a></li><li><a class="level is-mobile" href="#结合系统限制"><span class="level-left"><span class="level-item">结合系统限制</span></span></a></li></ul></li><li><a class="level is-mobile" href="#总结"><span class="level-left"><span class="level-item">总结</span></span></a></li><li><a class="level is-mobile" href="#续"><span class="level-left"><span class="level-item">续</span></span></a></li><li><a class="level is-mobile" href="#续2"><span class="level-left"><span class="level-item">续2</span></span></a></li><li><a class="level is-mobile" href="#参考资料"><span class="level-left"><span class="level-item">参考资料</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">Tags</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/btrace/"><span class="tag">btrace</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/concurrent/"><span class="tag">concurrent</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/elf/"><span class="tag">elf</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/erlang/"><span class="tag">erlang</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ha/"><span class="tag">ha</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/inode/"><span class="tag">inode</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/io/"><span class="tag">io</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/java/"><span class="tag">java</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux/"><span class="tag">linux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/lock/"><span class="tag">lock</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/rabbitmq/"><span class="tag">rabbitmq</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/storage/"><span class="tag">storage</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/tcp/"><span class="tag">tcp</span><span class="tag">1</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/p.jpeg" alt="Zhihui&#039;s Blog" height="28"></a><p class="is-size-7"><span>&copy; 2023 Zhihui</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("en");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><a id="back-to-top" title="Back to top" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "This website uses cookies to improve your experience.",
+          dismiss: "Got it!",
+          allow: "Allow cookies",
+          deny: "Decline",
+          link: "Learn more",
+          policy: "Cookie Policy",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="Type something..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"Type something...","untitled":"(Untitled)","posts":"Posts","pages":"Pages","categories":"Categories","tags":"Tags"});
+        });</script></body></html>
