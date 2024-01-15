@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>小模型（Small Language Model）信息汇总 - Zhihui&#039;s Blog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Zhihui&#039;s Blog"><meta name="msapplication-TileImage" content="/img/p.jpeg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Zhihui&#039;s Blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="随着人工智能领域的不断发展，语言模型也变得越来越重要。在这个领域中，小模型（Small Language Models）正逐渐崭露头角，与大模型（Large Language Models）相比，它们有着独特的特点和潜在的价值。这篇文章主要关注两点，模型的进展，推理的进展，特别是在消费级设备（PC，移动设备）相关的进展。"><meta property="og:type" content="blog"><meta property="og:title" content="小模型（Small Language Model）信息汇总"><meta property="og:url" content="http://zhihuij.github.io/2024/01/14/small-language-model/"><meta property="og:site_name" content="Zhihui&#039;s Blog"><meta property="og:description" content="随着人工智能领域的不断发展，语言模型也变得越来越重要。在这个领域中，小模型（Small Language Models）正逐渐崭露头角，与大模型（Large Language Models）相比，它们有着独特的特点和潜在的价值。这篇文章主要关注两点，模型的进展，推理的进展，特别是在消费级设备（PC，移动设备）相关的进展。"><meta property="og:locale" content="en_US"><meta property="og:image" content="http://zhihuij.github.io/images/phi-2.png"><meta property="og:image" content="http://zhihuij.github.io/images/mlc.svg"><meta property="article:published_time" content="2024-01-14T14:15:51.000Z"><meta property="article:author" content="Zhihui"><meta property="article:tag" content="llm"><meta property="article:tag" content="slm"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="http://zhihuij.github.io/images/phi-2.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://zhihuij.github.io/2024/01/14/small-language-model/"},"headline":"小模型（Small Language Model）信息汇总","image":["http://zhihuij.github.io/images/phi-2.png"],"datePublished":"2024-01-14T14:15:51.000Z","author":{"@type":"Person","name":"Zhihui"},"publisher":{"@type":"Organization","name":"Zhihui's Blog","logo":{"@type":"ImageObject","url":"http://zhihuij.github.io/img/p.jpeg"}},"description":"随着人工智能领域的不断发展，语言模型也变得越来越重要。在这个领域中，小模型（Small Language Models）正逐渐崭露头角，与大模型（Large Language Models）相比，它们有着独特的特点和潜在的价值。这篇文章主要关注两点，模型的进展，推理的进展，特别是在消费级设备（PC，移动设备）相关的进展。"}</script><link rel="canonical" href="http://zhihuij.github.io/2024/01/14/small-language-model/"><link rel="icon" href="/img/p.jpeg"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/p.jpeg" alt="Zhihui&#039;s Blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a></div><div class="navbar-end"><a class="navbar-item is-hidden-tablet catalogue" title="Catalogue" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="Search" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item">Posted&nbsp;<time dateTime="2024-01-14T14:15:51.000Z" title="2024/1/14 22:15:51">2024-01-14</time></span><span class="level-item"><a class="link-muted" href="/categories/AI/">AI</a></span><span class="level-item">23 minutes read (About 3420 words)</span></div></div><h1 class="title is-3 is-size-4-mobile">小模型（Small Language Model）信息汇总</h1><div class="content"><p>随着人工智能领域的不断发展，语言模型也变得越来越重要。在这个领域中，小模型（Small Language Models）正逐渐崭露头角，与大模型（Large Language Models）相比，它们有着独特的特点和潜在的价值。这篇文章主要关注两点，模型的进展，推理的进展，特别是在消费级设备（PC，移动设备）相关的进展。</p>
+<span id="more"></span>
+
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><h3 id="小模型与大模型的区别"><a href="#小模型与大模型的区别" class="headerlink" title="小模型与大模型的区别"></a>小模型与大模型的区别</h3><ul>
+<li>规模大小：最明显的差异是规模大小。大模型通常包括数百亿甚至上千亿个参数，而小模型则包含数十亿甚至更少的参数。</li>
+<li>计算资源：大模型需要庞大的计算资源来进行训练和推理，这使得它们在运行时需要强大的硬件支持。相比之下，小模型可以在更加普通的硬件上运行，这使得它们更具可行性。</li>
+</ul>
+<h3 id="小模型的优势和价值"><a href="#小模型的优势和价值" class="headerlink" title="小模型的优势和价值"></a>小模型的优势和价值</h3><ul>
+<li>计算成本：小模型在计算成本上具有优势，因为它们不需要大规模的硬件支持。这使得它们成为中小企业、初创公司和研究团队的理想选择，因为它们可以更轻松地实现自然语言处理的功能。</li>
+<li>更容易控制和定制：小模型更容易进行定制和控制，因为它们的规模较小，更容易理解和调整。这使得它们适用于需要特定定制解决方案的应用领域。</li>
+</ul>
+<h3 id="可能的问题"><a href="#可能的问题" class="headerlink" title="可能的问题"></a>可能的问题</h3><p>虽然小模型具有很多优势，但也存在一些潜在的问题：</p>
+<ul>
+<li>性能限制：由于其较小的规模，小模型在某些任务上可能表现不如大模型。它们的语言理解和生成能力可能会受到限制，特别是在处理复杂或专业性的任务时。</li>
+<li>知识覆盖范围：小模型的训练数据较小，因此它们的知识覆盖范围可能有限。对于某些领域的信息，它们可能无法提供足够的帮助。</li>
+</ul>
+<h2 id="模型进展"><a href="#模型进展" class="headerlink" title="模型进展"></a>模型进展</h2><h3 id="Phi-2"><a href="#Phi-2" class="headerlink" title="Phi-2"></a>Phi-2</h3><p>微软在 23.12 发布了 <a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/blog/phi-2-the-surprising-power-of-small-language-models/">Phi-2</a>：</p>
+<blockquote>
+<p>Phi-2, a small language model (SLM) with 2.7 billion parameters.<br>Phi-2 is notable for its exceptional performance on various benchmarks, rivaling or surpassing models up to 25 times larger in size.<br>This achievement is attributed to innovative training approaches, <strong>including the use of high-quality “textbook-quality” data</strong> and techniques for scaling knowledge transfer.<br>Despite its smaller size, Phi-2 demonstrates advanced reasoning and language understanding capabilities.</p>
+</blockquote>
+<p>一个只有 2.7B 参数的模型，但效果与 llama 2 70B 及 Mistral 7B 差不多：<br><img src="/images/phi-2.png" /></p>
+<h4 id="训练数据规模"><a href="#训练数据规模" class="headerlink" title="训练数据规模"></a>训练数据规模</h4><blockquote>
+<p>Phi-2 is a Transformer-based model with a next-word prediction objective, trained on <strong>1.4T tokens</strong> from multiple passes on a mixture of Synthetic and Web datasets for NLP and coding.<br>The training for Phi-2 <strong>took 14 days on 96 A100 GPUs</strong>.</p>
+</blockquote>
+<p>做个对比：</p>
+<blockquote>
+<p>GPT-3: <strong>174B</strong> parameters. Phi-2: <strong>2.7B</strong> parameters.<br>GPT-3: trained with <strong>300B</strong> tokens. Phi-2: trained with <strong>1400B</strong> tokens.</p>
+</blockquote>
+<h4 id="Key-Insights-Behind-Phi-2"><a href="#Key-Insights-Behind-Phi-2" class="headerlink" title="Key Insights Behind Phi-2"></a>Key Insights Behind Phi-2</h4><blockquote>
+<p>Firstly, training data quality plays a critical role in model performance. This has been known for decades, but we take this insight to its extreme by focusing on “textbook-quality” data, following upon our prior work “Textbooks Are All You Need.”<br>Secondly, we use innovative techniques to scale up, starting from our 1.3 billion parameter model, Phi-1.5, and embedding its knowledge within the 2.7 billion parameter Phi-2. </p>
+</blockquote>
+<p>看起来除了技术上的革新外，最重要的就是用高质量的数据训练模型。</p>
+<p>Phi-2 一开始出来时候，licensed 只能用于研究，但是在前几天改成了 <a target="_blank" rel="noopener" href="https://huggingface.co/microsoft/phi-2/commit/7e10f3ea09c0ebd373aebc73bc6e6ca58204628d">MIT</a>，就是说随便用。国内已经有学校基于 Phi-2 搞<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.02330">多模态模型</a>了。</p>
+<h3 id="Mistral-7B"><a href="#Mistral-7B" class="headerlink" title="Mistral 7B"></a>Mistral 7B</h3><p><a target="_blank" rel="noopener" href="https://mistral.ai/news/announcing-mistral-7b/">Mistral 7B</a> 现在在开源社区用的比较多，很多人基于 Mistral 7B 做一些小的应用，比如 private local 的个人助理之类的。</p>
+<blockquote>
+<p>Mistral 7B 是迄今为止同等规模中最强大的语言模型。作为一个拥有7.3亿参数的模型，Mistral 7B在所有基准测试中均优于13亿参数的Llama 2，并在许多基准测试中超越了34亿参数的Llama 1。更令人瞩目的是，Mistral 7B在代码领域的表现接近7B的CodeLlama，同时在英语任务上依然表现出色。<br>Mistral 7B采用了两项创新技术：分组查询注意力（Grouped-query Attention, GQA）和滑动窗口注意力（Sliding Window Attention, SWA），使得其在处理更长序列时成本更低，推理速度更快。此外，它还在Apache 2.0许可下发布，无限制地供用户使用。<br>这款模型不仅易于在任何任务上进行微调，而且在聊天方面的微调模型甚至超越了Llama 2的13亿参数聊天模型。Mistral 7B的表现在多个领域均十分出色，尤其在常识推理、世界知识、阅读理解、数学和编码等多个基准测试中显示了显著的优势。特别值得一提的是，在推理、理解和STEM（科学、技术、工程和数学）推理（MMLU）方面，Mistral 7B的表现相当于其三倍大小的Llama 2模型，这意味着在内存和吞吐量方面的显著节省。<br>Mistral 7B的滑动窗口注意力（SWA）机制是其主要的创新点，每层关注前4,096个隐藏状态，实现了线性计算成本。该模型在序列长度为16k和窗口大小为4k的情况下，实现了2倍的速度提升。此外，固定的注意力范围意味着可以将缓存限制在sliding_window大小的标记中，这在不影响模型质量的情况下，节省了一半的缓存内存。</p>
+</blockquote>
+<p>Mistral 还有个 8*7B 的 MoE（Mixtral of Experts）模型，<a target="_blank" rel="noopener" href="https://mistral.ai/news/mixtral-of-experts/">效果也是很不错</a>，号称现在最强开源模型。</p>
+<p>什么是 MoE？</p>
+<blockquote>
+<p><strong>Sparse MoE layers</strong> are used instead of dense feed-forward network (FFN) layers. MoE layers have a certain number of “experts” (e.g. 8), where each expert is a neural network. In practice, the experts are FFNs, but they can also be more complex networks or even a MoE itself, leading to hierarchical MoEs!<br><strong>A gate network or router</strong>, that determines which tokens are sent to which expert. </p>
+</blockquote>
+<p>简单讲就是一个门控网络+多个“专家“网络，门控网络负责将 token 路由到一个或者多个”专家“网络。</p>
+<h2 id="推理进展"><a href="#推理进展" class="headerlink" title="推理进展"></a>推理进展</h2><p>有了小的合适的模型，那怎么在消费级设备上运行大模型？</p>
+<h3 id="Machine-Learning-Compilation-for-LLM"><a href="#Machine-Learning-Compilation-for-LLM" class="headerlink" title="Machine Learning Compilation for LLM"></a>Machine Learning Compilation for LLM</h3><p><a target="_blank" rel="noopener" href="https://llm.mlc.ai/">MLC</a> 是 陈天奇 出的一个针对 LLM 做的一个推理部署解决方案，大致的逻辑如下图，包含三个部分：<br><img src="/images/mlc.svg" /></p>
+<blockquote>
+<ol>
+<li><strong>Model definition in Python</strong>. MLC offers a variety of pre-defined architectures, such as Llama (e.g., Llama2, Vicuna, OpenLlama, Wizard), GPT-NeoX (e.g., RedPajama, Dolly), RNNs (e.g., RWKV), and GPT-J (e.g., MOSS). Model developers could solely define the model in pure Python, without having to touch code generation and runtime.</li>
+<li><strong>Model compilation in Python</strong>. Models are compiled by TVM Unity compiler, where the compilation is configured in pure Python. MLC LLM quantizes and exports the Python-based model to a model library and quantized model weights. Quantization and optimization algorithms can be developed in pure Python to compress and accelerate LLMs for specific usecases.</li>
+<li><strong>Platform-native runtimes</strong>. Variants of MLCChat are provided on each platform: C++ for command line, Javascript for web, Swift for iOS, and Java for Android, configurable with a JSON chat config. App developers only need to familiarize with the platform-naive runtimes to integrate MLC-compiled LLMs into their projects.</li>
+</ol>
+</blockquote>
+<p>关键的三个部分：1）标准化的模型定义；2）模型编译及优化；3）平台相关的运行时（比如针对 iOS，Android等的运行时）。看起来像不像 Java 的逻辑：字节码，编译器，平台相关的运行时。所以可以叫跨平台大模型推理？</p>
+<h3 id="llama-cpp"><a href="#llama-cpp" class="headerlink" title="llama.cpp"></a>llama.cpp</h3><h4 id="Why-llama-cpp"><a href="#Why-llama-cpp" class="headerlink" title="Why llama.cpp?"></a>Why llama.cpp?</h4><blockquote>
+<p>However, practical applications of LLMs can be limited by the need for high-powered computing or the necessity for quick response times. These models typically require sophisticated hardware and extensive dependencies, which can make difficult their adoption in more constrained environments.<br>This is where LLaMa.cpp (or LLaMa C++) comes to the rescue, providing a lighter, more portable alternative to the heavyweight frameworks.</p>
+</blockquote>
+<p>虽然 <code>llama.cpp</code> 一开始的目标是在 MacBook 上运行开源模型 <code>LLaMA</code>，但实际上发展到现在不仅限于此，也支持 Windows，Linux 等 PC 平台，以及 iOS，Android 等移动平台，支持的模型也越来越多。</p>
+<h3 id="Apple"><a href="#Apple" class="headerlink" title="Apple"></a>Apple</h3><h4 id="CoreML"><a href="#CoreML" class="headerlink" title="CoreML"></a>CoreML</h4><blockquote>
+<p>Apple CoreML是苹果公司专为iOS和macOS设备开发的一款强大的机器学习框架。这个框架的核心目标是使开发者能够轻松地在苹果设备上集成和运行各种机器学习模型，从而提供丰富和智能的用户体验。<br>CoreML的设计注重高效性和易用性。它支持多种流行的机器学习模型，如神经网络、决策树、支持向量机等，同时还提供了一系列的工具和接口，方便开发者将训练好的模型转换为CoreML格式并集成到应用中。这意味着开发者可以在其他平台（例如TensorFlow或PyTorch）上训练模型，然后轻松地迁移到iOS设备上。<br>CoreML的另一个亮点是其对硬件的优化。它能够充分利用苹果设备上的CPU、GPU以及专门的神经网络硬件加速器（如Apple Neural Engine），从而实现高效的模型运行。这种优化确保了应用在执行机器学习任务时的响应速度和能效。<br>除了性能优化，CoreML还特别重视隐私保护。所有的模型推理操作都在设备本地完成，不需要将用户数据发送到云端。这不仅加快了处理速度，也为用户数据的安全和隐私提供了额外的保障。</p>
+</blockquote>
+<h4 id="LLM-in-a-Flash"><a href="#LLM-in-a-Flash" class="headerlink" title="LLM in a Flash"></a>LLM in a Flash</h4><p>Apple 曾在 23.12 月份发表了一篇论文：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2312.11514.pdf">LLM in a Flash</a>，尝试用更小的内存运行尽可能大的模型。</p>
+<blockquote>
+<p>The paper “LLM in a Flash: Efficient Large Language Model Inference with Limited Memory” explores methods to efficiently run large language models (LLMs) on devices with limited memory.<br><strong>The key focus is on using flash memory for storing model parameters, with selective loading into DRAM based on demand</strong>.<br>Two main techniques are introduced: “windowing,” which reduces data transfer by reusing previously activated neurons, and “row-column bundling,” which optimizes data chunk sizes for flash memory reading.<br>These methods enable running models up to twice the size of available DRAM with significantly increased inference speed.<br>This approach paves the way for effective LLM inference on devices with limited memory, enhancing model accessibility and application potential in resource-constrained environments.</p>
+</blockquote>
+<h4 id="Stable-Diffusion-on-Apple-Silicon"><a href="#Stable-Diffusion-on-Apple-Silicon" class="headerlink" title="Stable Diffusion on Apple Silicon"></a>Stable Diffusion on Apple Silicon</h4><p>早在 22.12 月 Apple 就发表了一篇文章关于如何在 macOS 或者 iOS 上运行 Stable Diffusion：<a target="_blank" rel="noopener" href="https://machinelearning.apple.com/research/stable-diffusion-coreml-apple-silicon">Stable Diffusion with Core ML on Apple Silicon</a></p>
+<blockquote>
+<p>There are a number of reasons why on-device deployment of Stable Diffusion in an app is preferable to a server-based approach.<br>First, <strong>the privacy</strong> of the end user is protected because any data the user provided as input to the model stays on the user’s device.<br>Second, after initial download, <strong>users don’t require an internet connection</strong> to use the model.<br>Finally, locally deploying this model enables developers to reduce or eliminate their <strong>server-related costs</strong>.</p>
+</blockquote>
+<p>为啥要在个人设备上运行 SD：1）隐私；2）不需要网络；3）成本。苹果提供了一个 <a target="_blank" rel="noopener" href="https://github.com/apple/ml-stable-diffusion">Python 包</a>可以帮你把 PyTorch 模型转换成 CoreML 模型，以及一个可以用于部署模型的 Swift 包。</p>
+<h2 id="个人想法"><a href="#个人想法" class="headerlink" title="个人想法"></a>个人想法</h2><ul>
+<li>苹果在大模型上没啥声音，是不是在憋大招？现在的大模型准入门槛太高，大部分的团队及个人都玩不起，但如果苹果的设备上带了一个性能不错的小模型，会带来啥变化？如果小模型被手机或者设备厂商以标准化的服务或者接口提供出来，应该会催生很多 AI Native 的应用；</li>
+<li>小模型在隐私及成本上有先天的优势，模型所需要的计算资源由用户提供。现在各个大厂出的应用（通义千问，文心一言，ChatGPT等）现在都是免费随便用，但这背后都需要大量资源或者钱来支撑，用户有多大的意愿持续付钱？AI 时代的工具类应用未必会基于大模型，而有可能基于小模型，大模型所需要的算力成本在目前这个经济下行的超势下，可能无法支撑工具类应用大规模传播。另一方面，类似个人助理这样的应用，有一些场景有很强的隐私性，小模型不需要网络的特性很可能更合适；</li>
+<li>小模型的知识覆盖问题能不能用RAG解决？或者有更好更强的解决方案？</li>
+<li>以后也许会出现两条战线：一条向上卷越来越多的参数，更广的知识覆盖，更高的精度，更好的效果，可能适合 2B 及一些对效果有强要求的场景；另一条卷更高质量的训练数据及更强的推理能力，用更小的模型结合RAG之类的技术提供不错的效果，可能适合2C；</li>
+<li>很有可能以后占据手机的不是大模型，而是小模型，手机厂商可能会成为赢家（华为真是赢麻了。。。）。</li>
+</ul>
+</div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/llm/">llm</a><a class="link-muted mr-2" rel="tag" href="/tags/slm/">slm</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2013/11/15/rabbitmq-persistent/"><span class="level-item">RabbitMQ持久化机制</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">Comments</h3><div id="disqus_thread"><noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript></div><script>var disqus_config = function () {
+            this.page.url = 'http://zhihuij.github.io/2024/01/14/small-language-model/';
+            this.page.identifier = '2024/01/14/small-language-model/';
+        };
+        (function() {
+            var d = document, s = d.createElement('script');  
+            s.src = '//' + 'onlychoice' + '.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();</script></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/p.jpeg" alt="Zhihui Jiao"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Zhihui Jiao</p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">Posts</p><a href="/archives"><p class="title">12</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Categories</p><a href="/categories"><p class="title">6</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Tags</p><a href="/tags"><p class="title">15</p></a></div></div></nav></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">Catalogue</h3><ul class="menu-list"><li><a class="level is-mobile" href="#概念"><span class="level-left"><span class="level-item">概念</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#小模型与大模型的区别"><span class="level-left"><span class="level-item">小模型与大模型的区别</span></span></a></li><li><a class="level is-mobile" href="#小模型的优势和价值"><span class="level-left"><span class="level-item">小模型的优势和价值</span></span></a></li><li><a class="level is-mobile" href="#可能的问题"><span class="level-left"><span class="level-item">可能的问题</span></span></a></li></ul></li><li><a class="level is-mobile" href="#模型进展"><span class="level-left"><span class="level-item">模型进展</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#Phi-2"><span class="level-left"><span class="level-item">Phi-2</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#训练数据规模"><span class="level-left"><span class="level-item">训练数据规模</span></span></a></li><li><a class="level is-mobile" href="#Key-Insights-Behind-Phi-2"><span class="level-left"><span class="level-item">Key Insights Behind Phi-2</span></span></a></li></ul></li><li><a class="level is-mobile" href="#Mistral-7B"><span class="level-left"><span class="level-item">Mistral 7B</span></span></a></li></ul></li><li><a class="level is-mobile" href="#推理进展"><span class="level-left"><span class="level-item">推理进展</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#Machine-Learning-Compilation-for-LLM"><span class="level-left"><span class="level-item">Machine Learning Compilation for LLM</span></span></a></li><li><a class="level is-mobile" href="#llama-cpp"><span class="level-left"><span class="level-item">llama.cpp</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#Why-llama-cpp"><span class="level-left"><span class="level-item">Why llama.cpp?</span></span></a></li></ul></li><li><a class="level is-mobile" href="#Apple"><span class="level-left"><span class="level-item">Apple</span></span></a><ul class="menu-list"><li><a class="level is-mobile" href="#CoreML"><span class="level-left"><span class="level-item">CoreML</span></span></a></li><li><a class="level is-mobile" href="#LLM-in-a-Flash"><span class="level-left"><span class="level-item">LLM in a Flash</span></span></a></li><li><a class="level is-mobile" href="#Stable-Diffusion-on-Apple-Silicon"><span class="level-left"><span class="level-item">Stable Diffusion on Apple Silicon</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="#个人想法"><span class="level-left"><span class="level-item">个人想法</span></span></a></li></ul></div></div><script src="/js/toc.js" defer></script></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">Tags</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/btrace/"><span class="tag">btrace</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/concurrent/"><span class="tag">concurrent</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/elf/"><span class="tag">elf</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/erlang/"><span class="tag">erlang</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ha/"><span class="tag">ha</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/inode/"><span class="tag">inode</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/io/"><span class="tag">io</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/java/"><span class="tag">java</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux/"><span class="tag">linux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/llm/"><span class="tag">llm</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/lock/"><span class="tag">lock</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/rabbitmq/"><span class="tag">rabbitmq</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/slm/"><span class="tag">slm</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/storage/"><span class="tag">storage</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/tcp/"><span class="tag">tcp</span><span class="tag">1</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/p.jpeg" alt="Zhihui&#039;s Blog" height="28"></a><p class="is-size-7"><span>&copy; 2024 Zhihui</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p></div><div class="level-end"></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("en");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><a id="back-to-top" title="Back to top" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "This website uses cookies to improve your experience.",
+          dismiss: "Got it!",
+          allow: "Allow cookies",
+          deny: "Decline",
+          link: "Learn more",
+          policy: "Cookie Policy",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="Type something..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"Type something...","untitled":"(Untitled)","posts":"Posts","pages":"Pages","categories":"Categories","tags":"Tags"});
+        });</script></body></html>
