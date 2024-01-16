@@ -1,7 +1,6 @@
 ---
 title: 消息队列系统存储架构演进
 date: 2024-01-15 09:25:51
-hidden: true
 comments: true
 toc: true
 categories: 
@@ -78,23 +77,24 @@ Pulsar是由Yahoo开发的一个分布式发布订阅消息系统。
 相比 RocketMQ 以及 Kafka，Pulsar 最大的不同是，从一开始就是计算存储分离的架构，broker 不再负责存储，存储完全由 bookkeeper 来负责，消息的高可用保证也完全由 bookkeeper 来保证。
 
 ### 存储架构
-<img src="{{ root_url }}/images/pulsar_distributedlog.png" />
 
+<img src="{{ root_url }}/images/pulsar_distributedlog.png" />
 <img src="{{ root_url }}/images/pulsar_bookkeeper_segment.png" />
 
 ## 未来架构演变
 ### 计算存储分离
-有了 Pulsar 的计算存储分离架构后，RocketMQ 及 Kafka 都开始做类似的架构调整，也就是 Tiered Storage，少量数据存储在本地磁盘，大量或者历史数据存储到对象存储。
-
-计算存储分离的架构有哪些好处呢？
+Pulsar 是完全的计算存储分离架，而 RocketMQ 及 Kafka 采取了一个相对折中的策略：少量实时数据存储在本地磁盘或者云盘，大量历史数据存储到对象存储，即 tiered storage。一方面可以降低成本，另一方面对性能的影响可控。
+计算存储分离在架构上的好处有哪些呢？
 * Topic的容量可以无限扩张，不再受限于单个物理资源，你可以想一下基于本地磁盘版的 Kafka 做一个 SaaS 化的消息队列（类似 AWS 的 Kinesis）要怎么做？
 * 集群的伸缩不再需要数据迁移（或者rebalance）：这意味着集群可以快速扩容，在出现故障时，异常恢复时间也显著降低；
 * 计算能力及存储能力可以独立扩展，对于消息的读写也可以独立扩展。
 
 ### 无盘化架构
+无盘化也是计算存储分离架构，但不再依赖于本地磁盘或者云盘，而是完全依赖远程存储，如对象存储。
+
 23.7 月，创业公司 Warpstream 发表了一篇文章 [Kafka is dead, long live Kafka](https://www.warpstream.com/blog/kafka-is-dead-long-live-kafka) 主要吐槽了 Kafka 的架构在云环境下的成本问题：存储资源成本，高可用需要的数据复制带来的网络带宽成本，以及复杂的运维成本。为了解决这个问题，他们提出一个完全基于 AWS S3 的架构方案，可以把成本降到 1/10 甚至更少，但要牺牲延时（标准版 S3 的单次操作的延时在 100~200ms）。相比云盘，一方面显著降低资源及网络带宽成本，另一方面，因为整个存储都依赖 S3，可用性得到保证，并且运维成本显著降低。在实现上有两个关键点：
 * 写入：有一个写入缓存，看他们创始人回答的一些信息来看，大概每 4MB 或者每 250ms 写入一次 S3；
-* 读取：预读取缓存
+* 读取：消息数据按一定策略分散到所有 broker 上，消费时直接从 broker 读取，broker 按需从 S3 读取，并且需要有预读取的能力。
 
 23.11 月 AWS 发布了 S3 Express One Zone，成本高一点，但将单次操作的延时降到 10ms 以内，这个架构的可行性更高了。Warpstream 又发表了一篇 [S3 Express is All You Need](https://www.warpstream.com/blog/s3-express-is-all-you-need) ，对延时有要求的场景，可以使用 S3 Express 来覆盖，但要付出相比 S3 Standard 更高的成本。
 
